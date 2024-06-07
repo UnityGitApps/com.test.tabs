@@ -24,8 +24,9 @@ public class CustomTabsPlugin : MonoBehaviour
                     customTabsIntentBuilder.Call<AndroidJavaObject>("setUrlBarHidingEnabled", true);
 
                     // Настраиваем анимации перехода
-                    int enterAnimation = currentActivity.Get<AndroidJavaObject>("getResources").Call<AndroidJavaObject>("getIdentifier", "fade_in", "anim", currentActivity.Call<string>("getPackageName")).Call<int>("intValue");
-                    int exitAnimation = currentActivity.Get<AndroidJavaObject>("getResources").Call<AndroidJavaObject>("getIdentifier", "fade_out", "anim", currentActivity.Call<string>("getPackageName")).Call<int>("intValue");
+                    AndroidJavaObject resources = currentActivity.Call<AndroidJavaObject>("getResources");
+                    int enterAnimation = resources.Call<int>("getIdentifier", "fade_in", "anim", currentActivity.Call<string>("getPackageName"));
+                    int exitAnimation = resources.Call<int>("getIdentifier", "fade_out", "anim", currentActivity.Call<string>("getPackageName"));
                     customTabsIntentBuilder.Call<AndroidJavaObject>("setExitAnimations", currentActivity, enterAnimation, exitAnimation);
 
                     AndroidJavaObject customTabsIntent = customTabsIntentBuilder.Call<AndroidJavaObject>("build");
