@@ -7,7 +7,7 @@ env:
   UNITY_EMAIL: "unitydatastorage@gmail.com"
   UNITY_PASSWORD: "qwerty12345Q"
   
-  APP_NAME: "com.test.tabs0"
+  APP_NAME: "com.test.tabs"
   
   AndroidKeystorePass: "qwerty"
   AndroidKeyaliasPass: "qwerty"
