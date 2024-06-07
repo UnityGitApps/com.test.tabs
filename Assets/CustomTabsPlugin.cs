@@ -10,13 +10,15 @@ public class CustomTabsPlugin : MonoBehaviour
             {
                 AndroidJavaObject currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
 
-                using (AndroidJavaClass customTabsIntentBuilderClass = new AndroidJavaClass("androidx.browser.customtabs.CustomTabsIntent$Builder"))
+                // Создаем экземпляр CustomTabsIntent.Builder через конструктор
+                using (AndroidJavaObject customTabsIntentBuilder = new AndroidJavaObject("androidx.browser.customtabs.CustomTabsIntent$Builder"))
                 {
-                    AndroidJavaObject customTabsIntentBuilder = customTabsIntentBuilderClass.Call<AndroidJavaObject>("<init>");
                     AndroidJavaObject customTabsIntent = customTabsIntentBuilder.Call<AndroidJavaObject>("build");
 
-                    using (AndroidJavaObject uri = new AndroidJavaObject("android.net.Uri", "parse", url))
+                    // Создаем URI
+                    using (AndroidJavaObject uri = new AndroidJavaClass("android.net.Uri").CallStatic<AndroidJavaObject>("parse", url))
                     {
+                        // Запускаем Custom Tab
                         customTabsIntent.Call("launchUrl", currentActivity, uri);
                     }
                 }
