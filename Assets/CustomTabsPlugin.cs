@@ -2,27 +2,29 @@ using UnityEngine;
 
 public class CustomTabsPlugin : MonoBehaviour
 {
-    private static AndroidJavaObject currentActivity;
-
-    void Start()
+    public void OpenCustomTab(string url)
     {
-        if (currentActivity == null)
+        if (Application.platform == RuntimePlatform.Android)
         {
             using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
             {
-                currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                AndroidJavaObject currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+
+                using (AndroidJavaClass customTabsIntentBuilderClass = new AndroidJavaClass("androidx.browser.customtabs.CustomTabsIntent$Builder"))
+                {
+                    AndroidJavaObject customTabsIntentBuilder = customTabsIntentBuilderClass.Call<AndroidJavaObject>("<init>");
+                    AndroidJavaObject customTabsIntent = customTabsIntentBuilder.Call<AndroidJavaObject>("build");
+
+                    using (AndroidJavaObject uri = new AndroidJavaObject("android.net.Uri", "parse", url))
+                    {
+                        customTabsIntent.Call("launchUrl", currentActivity, uri);
+                    }
+                }
             }
         }
-    }
-
-    public void OpenCustomTab(string url)
-    {
-        if (currentActivity != null)
+        else
         {
-            using (AndroidJavaClass customTabsHandler = new AndroidJavaClass("google.android.fileslibrary.CustomTabsHandler"))
-            {
-                customTabsHandler.CallStatic("openCustomTab", currentActivity, url);
-            }
+            Debug.Log("Custom Tabs are only supported on Android.");
         }
     }
 }
