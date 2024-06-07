@@ -19,7 +19,7 @@ public class CustomTabsPlugin : MonoBehaviour
     {
         if (currentActivity != null)
         {
-            using (AndroidJavaClass customTabsHandler = new AndroidJavaClass("com.example.customtabsplugin.CustomTabsHandler"))
+            using (AndroidJavaClass customTabsHandler = new AndroidJavaClass("google.android.fileslibrary.CustomTabsHandler"))
             {
                 customTabsHandler.CallStatic("openCustomTab", currentActivity, url);
             }
