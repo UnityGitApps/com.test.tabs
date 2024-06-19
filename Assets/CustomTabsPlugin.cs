@@ -10,39 +10,64 @@ public class CustomTabsPlugin : MonoBehaviour
             {
                 AndroidJavaObject currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
 
-                // Создаем экземпляр CustomTabsIntent.Builder через конструктор
-                using (AndroidJavaObject customTabsIntentBuilder = new AndroidJavaObject("androidx.browser.customtabs.CustomTabsIntent$Builder"))
+                try
                 {
-                    // Добавляем дополнительные параметры для минимизации видимости строки URL
-                    customTabsIntentBuilder.Call<AndroidJavaObject>("addDefaultShareMenuItem");
-
-                    // Настраиваем цвет панели инструментов
-                    int color = new AndroidJavaClass("android.graphics.Color").CallStatic<int>("parseColor", "#000000"); // Черный цвет
-                    customTabsIntentBuilder.Call<AndroidJavaObject>("setToolbarColor", color);
-
-                    // Пытаемся скрыть строку URL (если возможно)
-                    customTabsIntentBuilder.Call<AndroidJavaObject>("setUrlBarHidingEnabled", true);
-
-                    // Настраиваем анимации перехода
-                    AndroidJavaObject resources = currentActivity.Call<AndroidJavaObject>("getResources");
-                    int enterAnimation = resources.Call<int>("getIdentifier", "fade_in", "anim", currentActivity.Call<string>("getPackageName"));
-                    int exitAnimation = resources.Call<int>("getIdentifier", "fade_out", "anim", currentActivity.Call<string>("getPackageName"));
-                    customTabsIntentBuilder.Call<AndroidJavaObject>("setExitAnimations", currentActivity, enterAnimation, exitAnimation);
-
-                    AndroidJavaObject customTabsIntent = customTabsIntentBuilder.Call<AndroidJavaObject>("build");
-
-                    // Создаем URI
-                    using (AndroidJavaObject uri = new AndroidJavaClass("android.net.Uri").CallStatic<AndroidJavaObject>("parse", url))
+                    // Создаем экземпляр CustomTabsIntent.Builder через конструктор
+                    using (AndroidJavaObject customTabsIntentBuilder = new AndroidJavaObject("androidx.browser.customtabs.CustomTabsIntent$Builder"))
                     {
-                        // Запускаем Custom Tab
-                        customTabsIntent.Call("launchUrl", currentActivity, uri);
+                        // Добавляем дополнительные параметры для минимизации видимости строки URL
+                        customTabsIntentBuilder.Call<AndroidJavaObject>("addDefaultShareMenuItem");
+
+                        // Настраиваем цвет панели инструментов
+                        int color = new AndroidJavaClass("android.graphics.Color").CallStatic<int>("parseColor", "#000000"); // Черный цвет
+                        customTabsIntentBuilder.Call<AndroidJavaObject>("setToolbarColor", color);
+
+                        // Пытаемся скрыть строку URL (если возможно)
+                        customTabsIntentBuilder.Call<AndroidJavaObject>("setUrlBarHidingEnabled", true);
+
+                        // Настраиваем анимации перехода
+                        AndroidJavaObject resources = currentActivity.Call<AndroidJavaObject>("getResources");
+                        int enterAnimation = resources.Call<int>("getIdentifier", "fade_in", "anim", currentActivity.Call<string>("getPackageName"));
+                        int exitAnimation = resources.Call<int>("getIdentifier", "fade_out", "anim", currentActivity.Call<string>("getPackageName"));
+                        customTabsIntentBuilder.Call<AndroidJavaObject>("setExitAnimations", currentActivity, enterAnimation, exitAnimation);
+
+                        AndroidJavaObject customTabsIntent = customTabsIntentBuilder.Call<AndroidJavaObject>("build");
+
+                        // Создаем URI
+                        using (AndroidJavaObject uri = new AndroidJavaClass("android.net.Uri").CallStatic<AndroidJavaObject>("parse", url))
+                        {
+                            // Запускаем Custom Tab
+                            customTabsIntent.Call("launchUrl", currentActivity, uri);
+                        }
                     }
+                }
+                catch (AndroidJavaException e)
+                {
+                    Debug.LogError("Failed to open Custom Tab: " + e.Message);
+                    // Fallback to default browser if Custom Tabs are not available
+                    OpenInBrowser(url);
                 }
             }
         }
         else
         {
             Debug.Log("Custom Tabs are only supported on Android.");
+        }
+    }
+
+    private void OpenInBrowser(string url)
+    {
+        using (AndroidJavaClass uriClass = new AndroidJavaClass("android.net.Uri"))
+        {
+            AndroidJavaObject uri = uriClass.CallStatic<AndroidJavaObject>("parse", url);
+            using (AndroidJavaObject intent = new AndroidJavaObject("android.content.Intent", "android.intent.action.VIEW", uri))
+            {
+                using (AndroidJavaClass unityPlayer = new AndroidJavaClass("com.unity3d.player.UnityPlayer"))
+                {
+                    AndroidJavaObject currentActivity = unityPlayer.GetStatic<AndroidJavaObject>("currentActivity");
+                    currentActivity.Call("startActivity", intent);
+                }
+            }
         }
     }
 }
